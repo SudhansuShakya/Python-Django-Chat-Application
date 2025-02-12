@@ -11,5 +11,9 @@ cd Python-Django-Chat-Application
 
 install requirements pip install -r req.txt
 
+python manage.py makemigrations
+
+python manage.py migrate
+
 Runserver Python manage.py runserver
 
