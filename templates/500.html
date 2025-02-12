@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+{% load core_tags %}
+
+<html>
+
+<head>
+    <title>500 Error</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta content="500 Error Page" name="description">
+
+    <style>
+        html {
+            height: 100%;
+        }
+
+        html,
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            font-style: normal;
+            font-variant: normal;
+        }
+
+        .pd-5vw {
+            padding: 5vw;
+        }
+
+        .dpd-20 {
+            padding-bottom: 20px;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-red {
+            color: #ff3366;
+        }
+
+
+        .text-size-20-vh {
+            font-size: 20vh;
+            line-height: normal;
+        }
+
+        .text-size-10-vh {
+            font-size: 10vh;
+        }
+
+        .text-size-5-vh {
+            font-size: 5vh;
+        }
+
+
+
+
+
+
+
+
+
+
+
+        .bg-error-500 {
+            height: 100%;
+            position: relative;
+            background: #eee;
+            background: -moz-linear-gradient(top, rgba(255, 219, 219, 1) 0%, rgba(255, 255, 255, 1) 100%);
+            /* FF3.6-15 */
+            background: -webkit-linear-gradient(top, rgba(255, 219, 219, 1) 0%, rgba(255, 255, 255, 1) 100%);
+            /* Chrome10-25,Safari5.1-6 */
+            background: linear-gradient(to bottom, rgba(255, 219, 219, 1) 0%, rgba(255, 255, 255, 1) 100%);
+            /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+            filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffdbdb', endColorstr='#ffffff', GradientType=0);
+            /* IE6-9 */
+        }
+
+        .error-img {
+            position: absolute;
+            text-align: right;
+            right: 10vw;
+            bottom: 10vh;
+            width: 40%;
+        }
+
+        .error-img img {
+            max-width: 100%;
+        }
+
+        .back-btn-500 {
+            text-decoration: none;
+            font-size: 21px;
+            padding: 10px 50px;
+            font-weight: lighter;
+            color: #fff;
+            display: inline-block;
+            border-radius: 500px;
+            background: #ff3366;
+            background: -moz-linear-gradient(left, rgba(255, 86, 86, 1) 0%, rgba(244, 184, 53, 1) 100%);
+            /* FF3.6-15 */
+            background: -webkit-linear-gradient(left, rgba(255, 86, 86, 1) 0%, rgba(244, 184, 53, 1) 100%);
+            /* Chrome10-25,Safari5.1-6 */
+            background: linear-gradient(to right, rgba(255, 86, 86, 1) 0%, rgba(244, 184, 53, 1) 100%);
+            /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+            filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff5656', endColorstr='#f4b835', GradientType=1);
+            /* IE6-9 */
+        }
+
+
+
+
+        .bottom-copy {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            min-height: 140px;
+            text-align: center;
+        }
+
+        @media only screen and (max-width: 767px) {
+            .sm-hide {
+                display: none;
+            }
+
+            .text-size-10-vh {
+                font-size: 6vh;
+            }
+        }
+    </style>
+
+</head>
+
+<body class="bg-error-500" style="display: flex; justify-content: center;">
+    <section class="pd-5vw">
+        {% company_logo 'Logo' as logo %}
+        {% if logo.ciLogo %}
+        <img src="{{logo.ciLogo.file.url}}" alt="{{logo.ciLogo.title}}" class="w-40 h-16 " />
+        {% else %}
+        <div class="h-16 flex items-center">
+
+            <h1 class="text-4xl text-white">Tricom</h1>
+        </div>
+        {% endif %}
+
+        <div class="text-red">
+            <div class="text-size-20-vh">
+                <strong>
+                    500
+                </strong>
+            </div>
+            <h1 class="text-size-5-vh dpd-20 qlariti-line-height-0">
+                Internal Server Error !
+            </h1>
+        </div>
+        <div class="">
+            <a href="/" class="back-btn-500">&larr; Back To Home</a>
+        </div>
+    </section>
+  
+
+
+</body>
+
+</html>

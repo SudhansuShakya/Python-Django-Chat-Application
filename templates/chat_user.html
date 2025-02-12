@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<!-- Main container -->
+<div class="flex h-screen">
+    <!-- Sidebar -->
+    <div class="hidden md:block shadow shadow-xl w-1/4 p-2 flex flex-col">
+        <div class="flex justify-between items-center border-b-[0.4px]">
+            <h2 class="text-2xl font-semibold">Chat Application</h2>
+        </div>
+        <div class="overflow-y-auto scrollbar">
+            <div class="flex flex-col">
+                {% for user in customers %}
+                <a href="{% url 'chat_user' user.username %}"
+                    class="flex items-center cursor-pointer p-2 hover:bg-gray-100 shadow border-b-[0.4px]">
+                    <div class="w-12 h-12 rounded-full bg-gray-300 mr-3"></div>
+                    <div class="text-sm">
+                        {% if user.get_full_name %}
+                        {{user.get_full_name}}
+                        {% else %}
+                        {{user.username}}
+                        {% endif %}
+
+                        {% if request.user.get_full_name == user.get_full_name %}
+                        (You)
+                        {% endif %}
+
+                    </div>
+                </a>
+                {% endfor %}
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Area -->
+    <div class="w-full md:w-3/4 flex flex-col bg-zinc-100">
+        <div class="bg-zinc-300 flex p-2 justify-between items-center">
+            <div class="flex items-center">
+                <div class="w-12 h-12 rounded-full bg-gray-300 mr-3"></div>
+                <div>
+                    <h3 class="text-xl">{{user.username}}</h3>
+                    <span class="text-sm text-gray-500">online</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat messages -->
+        <div class="h-screen px-6 overflow-y-scroll scroll-smooth bg-[#efeae2] py-2 chat-container" id="chat_detail">
+
+            {% for date, messages in grouped_messages.items %}
+            <div class="sticky top-0 message-date flex w-full justify-center">
+                <h4 class="bg-white rounded-lg w-fit px-2 py-1 shadow-lg">{{ date|date:"d F, Y" }}</h4>
+                <!-- Format the date -->
+            </div>
+            {% for msg in messages %}
+
+            {% if msg.sender == request.user %}
+            <div class="flex w-full items-start space-x-2 mb-0.5 justify-end">
+                <div class="bg-[#d9fdd2] px-2 py-1 rounded-lg shadow-xl text-gray-950">
+                    <p class="text-sm">{{msg.content}}
+                        <!-- <sub class="text-[10px] text-gray-200">{{msg.timestamp}}</sub> -->
+                        <sub class="ml-1 mt-1 text-[10px] text-gray-900">{{msg.timestamp|time:'h:i A'}}</sub>
+                    </p>
+                </div>
+            </div>
+            {% else %}
+            <div class="flex w-full items-start space-x-2 mb-0.5">
+                <div class="bg-white px-2 py-1 rounded">
+                    <p class="text-sm">{{msg.content}}
+                        <sub class="text-[10px] text-gray-900">{{msg.timestamp|date:'h:i A'}}</sub>
+                    </p>
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+            {% endfor %}
+
+
+        </div>
+
+        <!-- Message Input -->
+        <form id="your-form" method="post" class="flex items-center p-2">
+            {% csrf_token %}
+            <input type="text" id="messageInput" class="w-full p-2 border border-gray-300 rounded-lg"
+                placeholder="Type a message..." name="msg" />
+            <input type="number" name="receiver" id="receiver" value="{{user.id}}" id="" hidden>
+            <button type="button" onclick="send_msg()"
+                class="ml-1 px-3 py-0.5 text-gray-700 hover:text-gray-900 ">
+                <span class="text-3xl">➤</span>
+            </button>
+        </form>
+    </div>
+</div>
+
+{% endblock content %}
+{% block script %}
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    function send_msg() {
+        $.ajax({
+            url: '{% url "send_message_to_other" %}',  // URL of the Django view
+            type: 'POST',
+            data: {
+                "msg": document.getElementById('messageInput').value,
+                "receiver": document.getElementById('receiver').value,
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+
+            },
+            success: function (response) {
+                // Handle successful response
+                if (response.message) {
+                    console.log("Success=", response);
+                    const dateObj = new Date(response.time);
+                    const date = dateObj.toLocaleDateString(); // Format: MM/DD/YYYY
+                    const options = { hour: '2-digit', minute: '2-digit', hour12: true };
+                    const time = dateObj.toLocaleTimeString([], options); // Format: HH:MM:SS AM/PM
+
+                    chat_detail = document.getElementById('chat_detail');
+                    chat_detail.innerHTML += `<div class="flex w-full items-start space-x-2 mb-0.5 justify-end">
+                <div class="bg-[#d9fdd2] px-2 py-1 rounded text-gray-950">
+                    <p class="text-sm">${response.message}
+                        <sub class="text-[10px] text-gray-900">${time}</sub>
+                    </p>
+                </div>
+            </div>`
+                    document.getElementById('messageInput').value = "";
+                    // $('#response-message').html('<p>' + response.message + '</p>');
+                }
+            },
+            error: function (response) {
+                console.log("Error=", response);
+
+                // Handle error
+                // if(response.responseJSON && response.responseJSON.error) {
+                //     $('#response-message').html('<p>' + response.responseJSON.error + '</p>');
+                // }
+            }
+        });
+    }
+
+</script>
+
+
+<script>
+    const userId = {{ request.user.id }};
+    console.log("USER==", userId);
+    console.log("USER==", typeof (userId));
+
+    // Create a WebSocket connection to the notifications channel
+    const socket = new WebSocket('ws://' + window.location.host + '/ws/notifications/' + userId + '/');
+
+    // When the WebSocket connection opens
+    socket.onopen = function (e) {
+        console.log('WebSocket connection established.');
+    };
+
+    // When a message is received (notification)
+    socket.onmessage = function (e) {
+        const data = JSON.parse(e.data);
+        console.log("WebSocket MSG==", data);
+        const dateObj = new Date(data.time);
+
+        const date = dateObj.toLocaleDateString(); // Format: MM/DD/YYYY
+        const options = { hour: '2-digit', minute: '2-digit', hour12: true };
+        const time = dateObj.toLocaleTimeString([], options); // Format: HH:MM:SS AM/PM
+        // alert(data.message);  // Simple example
+        chat_detail = document.getElementById('chat_detail');
+        chat_detail.innerHTML += `<div class="flex w-full items-start space-x-2 mb-0.5">
+                <div class="bg-white px-2 py-1 rounded">
+                    <p class="text-sm">${data.message}
+                        <sub class="text-[10px] text-gray-900">${time}</sub>
+                    </p>
+                </div>
+            </div>`
+    };
+
+    socket.onerror = function (e) {
+        console.log('WebSocket Error', e);
+    };
+
+    // When the WebSocket connection is closed
+    socket.onclose = function (e) {
+        console.log('WebSocket connection closed.');
+    };
+</script>
+
+
+{% endblock script %}
